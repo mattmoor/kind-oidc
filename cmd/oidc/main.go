@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 
@@ -48,6 +49,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to extract issuer: %v", err)
 	}
+
+	// TODO(mattmoor): Change this to trust the local cluster's
+	// CA instead.
+	t := http.DefaultTransport.(*http.Transport).Clone()
+	//nolint:gosec
+	t.TLSClientConfig.InsecureSkipVerify = true
+	http.DefaultTransport = t
 
 	// Verify the token before we trust anything about it.
 	provider, err := oidc.NewProvider(context.Background(), issuer)
