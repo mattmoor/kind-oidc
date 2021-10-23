@@ -7,6 +7,7 @@ package main
 
 import (
 	"context"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -38,7 +39,27 @@ func extractIssuer(token string) (string, error) {
 }
 
 func main() {
-	path := "/var/run/kind-oidc/token"
+	const (
+		path  = "/var/run/kind-oidc/token"
+		k8sCA = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+	)
+
+	// Add the Kubernetes cluster's CA to the system CA pool, and to
+	// the default transport.
+	rootCAs, _ := x509.SystemCertPool()
+	if rootCAs == nil {
+		rootCAs = x509.NewCertPool()
+	}
+	certs, err := os.ReadFile(k8sCA)
+	if err != nil {
+		log.Fatalf("Failed to append %q to RootCAs: %v", k8sCA, err)
+	}
+	if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
+		log.Println("No certs appended, using system certs only")
+	}
+	t := http.DefaultTransport.(*http.Transport).Clone()
+	t.TLSClientConfig.RootCAs = rootCAs
+	http.DefaultTransport = t
 
 	auth, err := os.ReadFile(path)
 	if err != nil {
@@ -49,13 +70,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to extract issuer: %v", err)
 	}
-
-	// TODO(mattmoor): Change this to trust the local cluster's
-	// CA instead.
-	t := http.DefaultTransport.(*http.Transport).Clone()
-	//nolint:gosec
-	t.TLSClientConfig.InsecureSkipVerify = true
-	http.DefaultTransport = t
 
 	// Verify the token before we trust anything about it.
 	provider, err := oidc.NewProvider(context.Background(), issuer)
