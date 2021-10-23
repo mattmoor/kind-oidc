@@ -84,7 +84,7 @@ jobs:
               extraArgs:
                 "service-account-issuer": "kubernetes.default.svc"
                 "service-account-signing-key-file": "/etc/kubernetes/pki/sa.key"
-                "service-account-jwks-uri": "kubernetes.default.svc/openid/v1/jwks"
+                "service-account-jwks-uri": "https://kubernetes.default.svc:6443/openid/v1/jwks"
                 "service-account-key-file": "/etc/kubernetes/pki/sa.pub"
             networking:
               dnsDomain: "cluster.local"
