@@ -118,6 +118,16 @@ jobs:
 
     - name: Verify OIDC is configured
       run: |
+        # From: https://banzaicloud.com/blog/kubernetes-oidc/
+        # To be able to fetch the public keys and validate the JWT tokens against
+        # the Kubernetes cluster’s issuer we have to allow external unauthenticated
+        # requests. To do this, we bind this special role with a ClusterRoleBinding
+        # to unauthenticated users (make sure that this is safe in your environment,
+        # but only public keys are visible on this URL)
+        kubectl create clusterrolebinding oidc-reviewer \
+          --clusterrole=system:service-account-issuer-discovery \
+          --group=system:unauthenticated
+
         ko apply -Bf config/
 
         kubectl wait --for=condition=Complete --timeout=90s job/check-oidc
