@@ -125,4 +125,19 @@ jobs:
     - name: Dump job output
       if: ${{ failure() }}
       run: |
-        kubectl logs job/check-oidc
+        kubectl describe job check-oidc
+      
+        for ns in default; do
+          kubectl get pods -n${ns}
+          echo '::group:: describe'
+          kubectl describe pods -n${ns}
+          echo '::endgroup::'
+          for x in $(kubectl get pods -n${ns} -oname); do
+            echo "::group:: describe $x"
+            kubectl describe -n${ns} $x
+            echo '::endgroup::'
+            echo "::group:: $x logs"
+            kubectl logs -n${ns} $x --all-containers
+            echo '::endgroup::'
+          done
+        done
