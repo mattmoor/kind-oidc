@@ -82,7 +82,7 @@ jobs:
               name: config
             apiServer:
               extraArgs:
-                "service-account-issuer": "kubernetes.default.svc"
+                "service-account-issuer": "http://kubernetes.default.svc"
                 "service-account-signing-key-file": "/etc/kubernetes/pki/sa.key"
                 "service-account-jwks-uri": "https://kubernetes.default.svc:6443/openid/v1/jwks"
                 "service-account-key-file": "/etc/kubernetes/pki/sa.pub"
