@@ -82,8 +82,10 @@ jobs:
               name: config
             apiServer:
               extraArgs:
-                "service-account-issuer": "kubernetes.default.svc"
+                "service-account-issuer": "https://kubernetes.default.svc:6443"
                 "service-account-signing-key-file": "/etc/kubernetes/pki/sa.key"
+                "service-account-jwks-uri": https://kubernetes.default.svc:6443/openid/v1/jwks
+                "service-account-key-file": /etc/kubernetes/pki/sa.pub
             networking:
               dnsDomain: "cluster.local"
 
@@ -113,3 +115,14 @@ jobs:
         # Make the $REGISTRY_NAME -> 127.0.0.1, to tell `ko` to publish to
         # local reigstry, even when pushing $REGISTRY_NAME:$REGISTRY_PORT/some/image
         sudo echo "127.0.0.1 $REGISTRY_NAME" | sudo tee -a /etc/hosts
+
+    - name: Verify OIDC is configured
+      run: |
+        ko apply -Bf config/
+
+        kubectl wait --for=condition=Complete --timeout=30s job/check-oidc
+
+    - name: Dump job output
+      if: ${{ failure() }}
+      run: |
+        kubectl logs job/check-oidc

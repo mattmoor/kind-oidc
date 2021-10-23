@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: check-oidc
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: check-oidc
+        image: ko://github.com/mattmoor/kind-oidc/cmd/oidc
+        volumeMounts:
+        - mountPath: /var/run/kind-oidc
+          name: oidc-token
+
+      volumes:
+        - name: oidc-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: token
+                  expirationSeconds: 600 # Use as short-lived as possible.
+                  audience: kind-oidc
