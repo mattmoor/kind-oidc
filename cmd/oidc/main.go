@@ -41,7 +41,7 @@ func extractIssuer(token string) (string, error) {
 func main() {
 	const (
 		path  = "/var/run/kind-oidc/token"
-		k8sCA = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+		k8sCA = "/var/run/kind-oidc/ca.crt"
 	)
 
 	// Add the Kubernetes cluster's CA to the system CA pool, and to

@@ -51,13 +51,29 @@ which says:
 > but only public keys are visible on this URL)
 
 
-The final bit you need (for KinD) is to ensure you trust the Cluster's CA
-in your OIDC verification logic because the issuer endpoint's TLS is not
-signed by a public CA on KinD clusters.  This can be done with the Go
-snippet:
 
+The final bit you need (for KinD) is to ensure you trust the cluster's CA
+in your OIDC verification logic because the issuer endpoint's TLS is not
+signed by a public CA on KinD clusters.  This can be done with the following
+two snippets.
+
+Adding this to the projected volume will mount the cluster's CA certs into
+the container (See
+[KEP 1205](https://github.com/kubernetes/enhancements/blob/master/keps/sig-auth/1205-bound-service-account-tokens/README.md),
+thanks to @mattmoyer for the pointer!):
+```yaml
+              - configMap:
+                  name: kube-root-ca.crt
+                  items:
+                  - key: ca.crt
+                    path: ca.crt
+                    mode: 0666
+```
+
+Then this piece of code will augment the system cert pool with the CA
+certificates mounted above:
 ```go
-	const k8sCA = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+	const k8sCA = "/var/run/kind-oidc/ca.crt"
 
 	// Add the Kubernetes cluster's CA to the system CA pool, and to
 	// the default transport.
@@ -81,4 +97,3 @@ snippet:
 	t.TLSClientConfig.RootCAs = rootCAs
 	http.DefaultTransport = t
 ```
-
