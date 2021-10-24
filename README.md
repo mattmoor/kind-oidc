@@ -26,11 +26,11 @@ kubeadmConfigPatches:
   metadata:
     name: config
   apiServer:
-  extraArgs:
-    "service-account-issuer": "https://kubernetes.default.svc"
-    "service-account-signing-key-file": "/etc/kubernetes/pki/sa.key"
-    "service-account-jwks-uri": "https://kubernetes.default.svc/openid/v1/jwks"
-    "service-account-key-file": "/etc/kubernetes/pki/sa.pub"
+    extraArgs:
+      "service-account-issuer": "https://kubernetes.default.svc"
+      "service-account-signing-key-file": "/etc/kubernetes/pki/sa.key"
+      "service-account-jwks-uri": "https://kubernetes.default.svc/openid/v1/jwks"
+      "service-account-key-file": "/etc/kubernetes/pki/sa.pub"
 ```
 
 By default, the discovery endpoint on the KinD cluster is locked down, but the
